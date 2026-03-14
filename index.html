@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NoodleBar@LAB</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --red: #D72638;
+    --dark: #0f0f0f;
+    --card: #1a1a1a;
+    --gold: #F4A623;
+    --green: #2ECC71;
+    --orange: #E67E22;
+    --blue: #3498DB;
+    --text: #f0ece4;
+    --muted: #888;
+    --border: #2a2a2a;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--dark); color: var(--text); font-family: 'Noto Sans', sans-serif; overflow-x:hidden; }
+
+  nav {
+    position: fixed; top:0; left:0; width:100%; z-index:100;
+    background: rgba(15,15,15,0.96); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items:center; justify-content:space-between;
+    padding: 0 40px; height: 64px;
+  }
+  .logo { font-family:'Bebas Neue'; font-size:2rem; color:var(--red); letter-spacing:2px; }
+  .logo span { color: var(--gold); }
+  nav ul { list-style:none; display:flex; gap:28px; }
+  nav ul a { color:var(--muted); text-decoration:none; font-size:0.8rem; font-weight:600; letter-spacing:1px; text-transform:uppercase; transition:color 0.2s; }
+  nav ul a:hover { color:var(--text); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items:center; justify-content:center;
+    text-align:center;
+    background: linear-gradient(135deg, #0f0f0f 0%, #1a0a0a 50%, #0f0f0f 100%);
+    position:relative; overflow:hidden; padding-top: 64px;
+  }
+  .hero::before {
+    content:''; position:absolute; inset:0;
+    background: radial-gradient(ellipse at 50% 60%, rgba(215,38,56,0.13) 0%, transparent 70%);
+  }
+  .hero-content { position:relative; z-index:1; }
+  .hero-tag { font-size:0.75rem; font-weight:700; letter-spacing:4px; text-transform:uppercase; color:var(--red); margin-bottom:20px; }
+  .hero h1 { font-family:'Bebas Neue'; font-size: clamp(4rem, 12vw, 9rem); line-height:0.9; letter-spacing:2px; margin-bottom:24px; }
+  .hero h1 span { color:var(--red); }
+  .hero p { font-size:1.05rem; color:var(--muted); max-width:480px; margin:0 auto 40px; line-height:1.7; }
+  .hero-badges { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:48px; }
+  .badge { background:var(--card); border:1px solid var(--border); padding:7px 18px; border-radius:100px; font-size:0.78rem; font-weight:600; letter-spacing:1px; }
+  .badge.open { border-color:var(--green); color:var(--green); }
+  .badge.student { border-color:var(--blue); color:var(--blue); }
+  .cta-btn {
+    background: var(--red); color:#fff; border:none; padding:16px 40px;
+    font-family:'Noto Sans'; font-size:0.9rem; font-weight:700; letter-spacing:2px;
+    text-transform:uppercase; cursor:pointer; border-radius:4px;
+    transition: background 0.2s, transform 0.1s; text-decoration:none; display:inline-block; margin:6px;
+  }
+  .cta-btn:hover { background:#bf1f2e; transform:translateY(-2px); }
+  .cta-btn.outline { background:transparent; border:2px solid var(--gold); color:var(--gold); }
+  .cta-btn.outline:hover { background:var(--gold); color:var(--dark); }
+
+  /* INFO BAR */
+  .info-bar {
+    background: var(--card); border-top:3px solid var(--red); border-bottom: 1px solid var(--border);
+    padding: 32px 40px;
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:28px;
+    text-align:center;
+  }
+  .info-item .label { font-size:0.68rem; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+  .info-item .value { font-family:'Bebas Neue'; font-size:1.5rem; color:var(--gold); letter-spacing:1px; }
+  .info-item .sub { font-size:0.78rem; color:var(--muted); margin-top:4px; }
+
+  /* HOURS */
+  .hours-section { background:#111; padding:60px 40px; }
+  .hours-inner { max-width:900px; margin:0 auto; }
+  .hours-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .hours-card {
+    background:var(--card); border:1px solid var(--border); border-radius:12px; padding:32px;
+    position:relative; overflow:hidden;
+  }
+  .hours-card.weekend { border-color:var(--gold); }
+  .hours-card .day-label { font-size:0.7rem; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+  .hours-card .time { font-family:'Bebas Neue'; font-size:2.8rem; color:var(--gold); letter-spacing:2px; }
+  .hours-card .desc { font-size:0.82rem; color:var(--muted); margin-top:8px; line-height:1.6; }
+  .hours-badge {
+    position:absolute; top:16px; right:16px;
+    font-size:0.65rem; font-weight:700; letter-spacing:1px; padding:4px 10px;
+    border-radius:100px; text-transform:uppercase;
+  }
+  .hb-basic { background:rgba(136,136,136,0.15); color:var(--muted); border:1px solid var(--border); }
+  .hb-special { background:rgba(244,166,35,0.15); color:var(--gold); border:1px solid rgba(244,166,35,0.3); }
+
+  /* MENU TOGGLE */
+  .menu-toggle-bar {
+    max-width:1200px; margin:0 auto; padding:40px 40px 0;
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  }
+  .toggle-btn {
+    padding:10px 28px; border-radius:100px; font-size:0.82rem; font-weight:700;
+    letter-spacing:1px; text-transform:uppercase; cursor:pointer; border:2px solid var(--border);
+    background:transparent; color:var(--muted); transition:all 0.2s;
+  }
+  .toggle-btn.active { background:var(--red); border-color:var(--red); color:#fff; }
+  .toggle-btn.weekend-btn.active { background:var(--gold); border-color:var(--gold); color:var(--dark); }
+  .menu-note { font-size:0.8rem; color:var(--muted); margin-left:8px; }
+
+  /* SHELF */
+  .shelf-section { background: #111; padding: 60px 0 100px; }
+  .shelf-inner { max-width:1200px; margin:0 auto; padding:0 40px; }
+  .shelf { margin-bottom:60px; }
+  .shelf-title {
+    font-family:'Bebas Neue'; font-size:1.7rem; letter-spacing:3px;
+    border-left:4px solid var(--red); padding-left:16px;
+    margin-bottom:24px; display:flex; align-items:center; gap:14px;
+  }
+  .shelf-title .shelf-sub { font-size:0.9rem; color:var(--muted); font-family:'Noto Sans'; font-weight:400; }
+  .items-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:14px; }
+  .item-card {
+    background: var(--card); border:1px solid var(--border); border-radius:8px;
+    overflow:hidden; transition: border-color 0.2s, transform 0.2s; cursor:pointer;
+  }
+  .item-card:hover { border-color:var(--red); transform:translateY(-3px); }
+  .item-card.selected { border-color:var(--gold); background:#1f1a0a; }
+  .item-card.weekend-only { display:none; }
+  .item-img { height:110px; display:flex; align-items:center; justify-content:center; font-size:2.8rem; background: linear-gradient(135deg, #1f1f1f, #2a2a2a); }
+  .item-info { padding:12px; }
+  .item-name { font-weight:700; font-size:0.88rem; margin-bottom:4px; }
+  .item-detail { font-size:0.73rem; color:var(--muted); margin-bottom:6px; line-height:1.5; }
+  .item-meta { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; }
+  .item-calories { font-size:0.7rem; color:#aaa; margin-top:2px; }
+  .stock-badge { font-size:0.63rem; font-weight:700; letter-spacing:1px; padding:3px 7px; border-radius:100px; }
+  .stock-ok { background:rgba(46,204,113,0.15); color:var(--green); border:1px solid rgba(46,204,113,0.3); }
+  .stock-low { background:rgba(230,126,34,0.15); color:var(--orange); border:1px solid rgba(230,126,34,0.3); }
+  .weekend-badge { font-size:0.62rem; font-weight:700; letter-spacing:1px; padding:3px 8px; border-radius:100px; background:rgba(244,166,35,0.15); color:var(--gold); border:1px solid rgba(244,166,35,0.3); }
+
+  /* SOUP */
+  .soup-station { background: linear-gradient(135deg, #1a0a0a, #0f0f0f); padding:40px 0 80px; }
+  .soup-inner { max-width:1200px; margin:0 auto; padding:0 40px; }
+  .soup-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:20px; }
+  .soup-card {
+    background:var(--card); border:2px solid var(--border); border-radius:12px;
+    padding:28px; text-align:center; cursor:pointer;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .soup-card:hover { border-color:var(--red); transform:translateY(-3px); }
+  .soup-card.selected { border-color:var(--gold); background:#1f1a0a; }
+  .soup-card.weekend-only { display:none; }
+  .soup-emoji { font-size:3.5rem; margin-bottom:14px; }
+  .soup-name { font-family:'Bebas Neue'; font-size:1.8rem; letter-spacing:2px; margin-bottom:6px; }
+  .soup-desc { font-size:0.82rem; color:var(--muted); line-height:1.6; margin-bottom:12px; }
+  .soup-tags { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; }
+  .soup-tag { font-size:0.68rem; padding:3px 9px; border-radius:100px; background:#2a2a2a; color:var(--muted); }
+  .soup-tag.spicy { background:rgba(215,38,56,0.2); color:var(--red); }
+  .soup-tag.weekend { background:rgba(244,166,35,0.15); color:var(--gold); }
+
+  /* ORDER FORM */
+  .order-section { background:#0d0d0d; padding:100px 0; }
+  .order-inner { max-width:800px; margin:0 auto; padding:0 40px; }
+  .section-label { font-size:0.68rem; font-weight:700; letter-spacing:5px; text-transform:uppercase; color:var(--red); margin-bottom:10px; }
+  .section-title { font-family:'Bebas Neue'; font-size: clamp(2.2rem, 5vw, 3.8rem); letter-spacing:2px; margin-bottom:36px; }
+  .section-title span { color:var(--red); }
+  .student-notice {
+    background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3);
+    border-radius:10px; padding:20px 24px; margin-bottom:36px;
+    font-size:0.85rem; color:#aad4f0; line-height:1.6;
+  }
+  .student-notice strong { color:var(--blue); }
+  .form-group { margin-bottom:24px; }
+  .form-label { font-size:0.75rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:10px; display:block; }
+  .form-input {
+    width:100%; background:var(--card); border:1px solid var(--border); border-radius:6px;
+    padding:14px 18px; color:var(--text); font-family:'Noto Sans'; font-size:0.95rem;
+    transition:border-color 0.2s; outline:none;
+  }
+  .form-input:focus { border-color:var(--red); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+  .bowl-preview {
+    background: var(--card); border:1px solid var(--border); border-radius:12px;
+    padding:32px; margin-bottom:32px; text-align:center;
+  }
+  .bowl-display { font-size:4rem; margin-bottom:16px; }
+  .bowl-name { font-family:'Bebas Neue'; font-size:1.8rem; letter-spacing:2px; margin-bottom:8px; color:var(--gold); }
+  .bowl-items { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:20px; }
+  .bowl-chip { background:#2a2a2a; padding:5px 12px; border-radius:100px; font-size:0.78rem; }
+  .bowl-chip.none { color:var(--muted); }
+  .price-notice { font-size:0.85rem; color:var(--muted); margin-top:8px; }
+  .price-notice strong { color:var(--gold); font-size:1.1rem; }
+
+  .place-order-btn {
+    background: var(--red); color:#fff; border:none; padding:18px 48px;
+    font-family:'Noto Sans'; font-size:1rem; font-weight:700; letter-spacing:2px;
+    text-transform:uppercase; cursor:pointer; border-radius:6px; width:100%;
+    transition: background 0.2s; margin-top:8px;
+  }
+  .place-order-btn:hover { background:#bf1f2e; }
+
+  /* PAYMENT */
+  .payment-section { padding:80px 40px; max-width:900px; margin:0 auto; }
+  .payment-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:14px; }
+  .pay-card {
+    background:var(--card); border:1px solid var(--border); border-radius:8px;
+    padding:22px 14px; text-align:center; transition: border-color 0.2s;
+  }
+  .pay-card:hover { border-color:var(--gold); }
+  .pay-icon { font-size:1.8rem; margin-bottom:8px; }
+  .pay-name { font-size:0.78rem; font-weight:700; letter-spacing:1px; }
+  .pay-sub { font-size:0.68rem; color:var(--muted); margin-top:4px; }
+
+  /* LOYALTY */
+  .loyalty-section { background:linear-gradient(135deg, #1a1500, #0f0f0f); padding:100px 0; }
+  .loyalty-inner { max-width:800px; margin:0 auto; padding:0 40px; text-align:center; }
+  .stamp-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin:36px 0; }
+  .stamp {
+    aspect-ratio:1; border-radius:50%; border:2px dashed var(--border);
+    display:flex; align-items:center; justify-content:center; font-size:1.4rem;
+    transition: all 0.3s;
+  }
+  .stamp.filled { background:var(--gold); border-color:var(--gold); border-style:solid; }
+  .stamp.active { border-color:var(--gold); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(244,166,35,0.4)} 50%{box-shadow:0 0 0 12px rgba(244,166,35,0)} }
+  .loyalty-msg { font-size:0.95rem; color:var(--muted); margin-bottom:40px; line-height:1.7; }
+  .loyalty-msg strong { color:var(--gold); }
+  .qr-box {
+    background:var(--card); border:1px solid var(--border); border-radius:16px;
+    padding:36px; display:inline-block; text-align:center;
+  }
+  .qr-code {
+    width:150px; height:150px; background:#fff; margin:0 auto 18px;
+    display:grid; grid-template-columns:repeat(10,1fr); gap:2px; padding:10px; border-radius:6px;
+  }
+  .qr-pixel { border-radius:1px; }
+  .qr-label { font-size:0.73rem; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
+  .qr-label strong { display:block; color:var(--text); font-size:0.88rem; margin-bottom:4px; }
+
+  /* FOOTER */
+  footer {
+    background:var(--card); border-top:1px solid var(--border);
+    padding:40px; text-align:center; font-size:0.78rem; color:var(--muted);
+  }
+  footer strong { color:var(--text); }
+
+  .success-modal {
+    display:none; position:fixed; inset:0; z-index:200;
+    background:rgba(0,0,0,0.85); align-items:center; justify-content:center;
+  }
+  .success-modal.show { display:flex; }
+  .success-box {
+    background:var(--card); border:1px solid var(--border); border-radius:16px;
+    padding:48px 40px; text-align:center; max-width:420px; width:90%;
+  }
+  .success-icon { font-size:4rem; margin-bottom:20px; }
+  .success-title { font-family:'Bebas Neue'; font-size:2.2rem; letter-spacing:2px; margin-bottom:12px; color:var(--green); }
+  .success-sub { font-size:0.88rem; color:var(--muted); line-height:1.7; margin-bottom:28px; }
+  .close-btn {
+    background:var(--red); color:#fff; border:none; padding:14px 36px;
+    font-family:'Noto Sans'; font-size:0.88rem; font-weight:700; letter-spacing:2px;
+    text-transform:uppercase; cursor:pointer; border-radius:6px;
+  }
+
+  @media(max-width:700px) {
+    nav ul { display:none; }
+    .hours-grid { grid-template-columns:1fr; }
+    .form-row { grid-template-columns:1fr; }
+    section, .order-inner, .payment-section, .loyalty-inner { padding-left:20px; padding-right:20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Noodle<span>Bar</span>@LAB</div>
+  <ul>
+    <li><a href="#hours">Hours</a></li>
+    <li><a href="#menu">Menu</a></li>
+    <li><a href="#order">Order Online</a></li>
+    <li><a href="#payment">Payment</a></li>
+    <li><a href="#loyalty">Loyalty</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-tag">LAB University of Applied Sciences · Lahti Campus</div>
+    <h1>BUILD YOUR<br/><span>PERFECT</span><br/>BOWL</h1>
+    <p>Pick your noodles, load up the toppings, choose your broth. Self-service, always fresh — open when the canteen isn't. For LAB students only.</p>
+    <div class="hero-badges">
+      <span class="badge open">🟢 Open Today</span>
+      <span class="badge student">🎓 Students Only</span>
+      <span class="badge">📍 Lahti Campus</span>
+      <span class="badge">💳 Tap to Pay</span>
+    </div>
+    <div>
+      <a href="#menu" class="cta-btn">Explore Menu</a>
+      <a href="#order" class="cta-btn outline">Order Online</a>
+    </div>
+  </div>
+</div>
+
+<!-- INFO BAR -->
+<div class="info-bar">
+  <div class="info-item">
+    <div class="label">Location</div>
+    <div class="value">Lahti Campus</div>
+    <div class="sub">LAB University of Applied Sciences</div>
+  </div>
+  <div class="info-item">
+    <div class="label">Weekdays</div>
+    <div class="value">15:00 – 18:00</div>
+    <div class="sub">Mon – Fri · Basic menu</div>
+  </div>
+  <div class="info-item">
+    <div class="label">Weekends</div>
+    <div class="value">11:00 – 18:00</div>
+    <div class="sub">Sat – Sun · Extended menu</div>
+  </div>
+  <div class="info-item">
+    <div class="label">Price</div>
+    <div class="value">€3.10</div>
+    <div class="sub">One bowl · Students only</div>
+  </div>
+</div>
+
+<!-- HOURS -->
+<div class="hours-section" id="hours">
+  <div class="hours-inner">
+    <div class="section-label">Opening Hours</div>
+    <div class="section-title" style="font-family:'Bebas Neue';font-size:clamp(2.2rem,5vw,3.8rem);letter-spacing:2px;margin-bottom:36px;">When We're <span style="color:var(--red)">Open</span></div>
+    <div class="hours-grid">
+      <div class="hours-card">
+        <span class="hours-badge hb-basic">Basic Menu</span>
+        <div class="day-label">Monday – Friday</div>
+        <div class="time">15:00 – 18:00</div>
+        <div class="desc">After-lecture service. Core noodle selection with standard toppings and both soups. Perfect for a quick meal before evening study sessions.</div>
+      </div>
+      <div class="hours-card weekend">
+        <span class="hours-badge hb-special">⭐ Extended Menu</span>
+        <div class="day-label">Saturday – Sunday</div>
+        <div class="time">11:00 – 18:00</div>
+        <div class="desc">Longer hours with a bigger and better menu — extra noodle types, more premium proteins, special toppings, and an extra soup not available on weekdays.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MENU TOGGLE -->
+<div class="menu-toggle-bar" id="menu">
+  <button class="toggle-btn active" id="weekday-btn" onclick="switchMenu('weekday')">Weekday Menu</button>
+  <button class="toggle-btn weekend-btn" id="weekend-btn" onclick="switchMenu('weekend')">Weekend Menu ⭐</button>
+  <span class="menu-note" id="menu-note">Mon – Fri · 15:00–18:00</span>
+</div>
+
+<!-- SHELF DISPLAY -->
+<div class="shelf-section">
+  <div class="shelf-inner">
+
+    <!-- NOODLES -->
+    <div class="shelf">
+      <div class="shelf-title">🍜 Noodles <span class="shelf-sub">— choose one</span></div>
+      <div class="items-grid">
+        <div class="item-card" data-type="noodle" data-name="Ramen" onclick="selectItem(this,'noodle','Ramen')">
+          <div class="item-img">🍜</div>
+          <div class="item-info">
+            <div class="item-name">Ramen Noodles</div>
+            <div class="item-detail">Thin wheat noodles. Springy, absorbs broth well.</div>
+            <div class="item-detail">⚠️ Gluten, Wheat</div>
+            <div class="item-meta">
+              <span class="stock-badge stock-ok">✅ Available</span>
+            </div>
+          </div>
+        </div>
+        <div class="item-card" data-type="noodle" data-name="Udon" onclick="selectItem(this,'noodle','Udon')">
+          <div class="item-img">🍥</div>
+          <div class="item-info">
+            <div class="item-name">Udon Noodles</div>
+            <div class="item-detail">Thick, chewy Japanese noodles. Very filling.</div>
+            <div class="item-detail">⚠️ Gluten, Wheat</div>
+            <div class="item-meta">
+              <span class="stock-badge stock-low">⚠️ Low Stock</span>
+            </div>
+          </div>
+        </div>
+        <div class="item-card" data-type="noodle" data-name="Rice Noodles" onclick="selectItem(this,'noodle','Rice Noodles')">
+          <div class="item-img">🌾</div>
+          <div class="item-info">
+            <div class="item-name">Rice Noodles</div>
+            <div class="item-detail">Light, flat and gluten-free. Great with Tom Yum.</div>
+            <div class="item-detail">✅ Gluten-Free</div>
+            <div class="item-meta">
+              <span class="stock-badge stock-ok">✅ Available</span>
+            </div>
+          </div>
+        </div>
+        <!-- Weekend only noodles -->
+        <div class="item-card weekend-only" data-type="noodle" data-name="Glass Noodles" onclick="selectItem(this,'noodle','Glass Noodles')">
+          <div class="item-img">✨</div>
+          <div class="item-info">
+            <div class="item-name">Glass Noodles</div>
+            <div class="item-detail">Transparent vermicelli. Light, slippery and delicious.</div>
+            <div class="item-detail">✅ Gluten-Free</div>
+            <div class="item-meta">
+              <span class="weekend-badge">⭐ Weekend</span>
+              <span class="stock-badge stock-ok">✅ Available</span>
+            </div>
+          </div>
+        </div>
+        <div class="item-card weekend-only" data-type="noodle" data-name="Egg Noodles" onclick="selectItem(this,'noodle','Egg Noodles')">
+          <div class="item-img">🥚</div>
+          <div class="item-info">
+            <div class="item-name">Egg Noodles</div>
+            <div class="item-detail">Rich yellow egg noodles. Soft and flavourful.</div>
+            <div class="item-detail">⚠️ Egg, Gluten</div>
+            <div class="item-meta">
+              <span class="weekend-badge">⭐ Weekend</span>
+              <span class="stock-badge stock-ok">✅ Available</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROTEIN -->
+    <div class="shelf">
+      <div class="shelf-title">🥩 Protein <span class="shelf-sub">— choose one</span></div>
+      <div class="items-grid">
+        <div class="item-card" data-type="meat" data-name="Beef Slices" onclick="selectItem(this,'meat','Beef Slices')">
+          <div class="item-img">🥩</div>
+          <div class="item-info">
+            <div class="item-name">Beef Slices</div>
+            <div class="item-detail">Thinly sliced tender beef.</div>
+            <div class="item-calories">~210 kcal per serving</div>
+            <div class="item-meta"><span class="stock-badge stock-ok">✅ Available</span></div>
+          </div>
+        </div>
+        <div class="item-card" data-type="meat" data-name="Chicken" onclick="selectItem(this,'meat','Chicken')">
+          <div class="item-img">🍗</div>
+          <div class="item-info">
+            <div class="item-name">Chicken Breast</div>
+            <div class="item-detail">Grilled and sliced. Lean, high protein.</div>
+            <div class="item-calories">~165 kcal per serving</div>
+            <div class="item-meta"><span class="stock-badge stock-ok">✅ Available</span></div>
+          </div>
+        </div>
+        <div class="item-card" data-type="meat" data-name="Pork Belly" onclick="selectItem(this,'meat','Pork Belly')">
+          <div class="item-img">🐷</div>
+          <div class="item-info">
+            <div class="item-name">Pork Belly</div>
+            <div class="item-detail">Slow-cooked, rich and flavourful.</div>
+            <div class="item-calories">~330 kcal per serving</div>
+            <div class="item-meta"><span class="stock-badge stock-low">⚠️ Low Stock</span></div>
+          </div>
+        </div>
+        <div class="item-card" data-type="meat" data-name="Crispy Tofu" onclick="selectItem(this,'meat','Crispy Tofu')">
+          <div class="item-img">🫘</div>
+          <div class="item-info">
+            <div class="item-name">Crispy Tofu</div>
+            <div class="item-detail">Pan-fried firm tofu. Vegan-friendly.</div>
+            <div class="item-calories">~145 kcal per serving</div>
+            <div class="item-meta"><span class="stock-badge stock-ok">✅ Available</span></div>
+          </div>
+        </div>
+        <!-- Weekend proteins -->
+        <div class="item-card weekend-only" data-type="meat" data-name="Prawn" onclick="selectItem(this,'meat','Prawn')">
+          <div class="item-img">🦐</div>
+          <div class="item-info">
+            <div class="item-name">Prawn</div>
+            <div class="item-detail">Fresh marinated prawns. Perfect with Tom Yum.</div>
+            <div class="item-calories">~90 kcal per serving</div>
+            <div class="item-meta">
+              <span class="weekend-badge">⭐ Weekend</span>
+              <span class="stock-badge stock-ok">✅ Available</span>
+            </div>
+          </div>
+        </div>
+        <div class="item-card weekend-only" data-type="meat" data-name="Duck" onclick="selectItem(this,'meat','Duck')">
+          <div class="item-img">🦆</div>
+          <div class="item-info">
+            <div class="item-name">Roast Duck</div>
+            <div class="item-detail">Slow-roasted sliced duck. Premium weekend special.</div>
+            <div class="item-calories">~280 kcal per serving</div>
+            <div class="item-meta">
+              <span class="weekend-badge">⭐ Weekend</span>
+              <span class="stock-badge stock-ok">✅ Available</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOPPINGS -->
+    <div class="shelf">
+      <div class="shelf-title">🥬 Toppings <span class="shelf-sub">— choose up to 3</span></div>
+      <div class="items-grid">
+        <div class="item-card" data-type="topping" data-name="Soft Egg" onclick="selectTopping(this,'Soft Egg')">
+          <div class="item-img">🥚</div>
+          <div class="item-info">
+            <div class="item-name">Soft-Boiled Egg</div>
+            <div class="item-detail">Marinated runny egg. Classic addition.</div>
+            <div class="item-detail">⚠️ Egg</div>
+            <div class="item-meta"><span class="stock-badge stock-ok">✅ Available</span></div>
+          </div>
+        </div>
+        <div class="item-card" data-type="topping" data-name="Spring Onion" onclick="selectTopping(this,'Spring Onion')">
+          <div class="item-img">🌿</div>
+          <div class="item-info">
+            <div class="item-name">Spring Onion</div>
+            <div class="item-detail">Fresh and aromatic. Vegan.</div>
+            <div class="item-meta"><span class="stock-badge stock-ok">✅ Available</span></div>
+          </div>
+        </div>
+        <div class="item-card" data-type="topping" data-name="Sweet Corn" onclick="selectTopping(this,'Sweet Corn')">
+          <div class="item-img">🌽</div>
+          <div class="item-info">
+            <div class="item-name">Sweet Corn</div>
+            <div class="item-detail">Adds sweet crunch. Student favourite.</div>
+            <div class="item-meta"><span class="stock-badge stock-ok">✅ Available</span></div>
+          </div>
+        </div>
+        <div class="item-card" data-type="topping" data-name="Shiitake Mushroom" onclick="selectTopping(this,'Shiitake Mushroom')">
+          <div class="item-img">🍄</div>
+          <div class="item-info">
+            <div class="item-name">Shiitake Mushroom</div>
+            <div class="item-detail">Umami-rich. Rehydrated in broth.</div>
+            <div class="item-meta"><span class="stock-badge stock-low">⚠️ Low Stock</span></div>
+          </div>
+        </div>
+        <div class="item-card" data-type="topping" data-name="Bok Choy" onclick="selectTopping(this,'Bok Choy')">
+          <div class="item-img">🥦</div>
+          <div class="item-info">
+            <div class="item-name">Bok Choy</div>
+            <div class="item-detail">Blanched Chinese cabbage. Fresh crunch.</div>
+            <div class="item-meta"><span class="stock-badge stock-ok">✅ Available</span></div>
+          </div>
+        </div>
+        <div class="item-card" data-type="topping" data-name="Chilli Oil" onclick="selectTopping(this,'Chilli Oil')">
+          <div class="item-img">🌶️</div>
+          <div class="item-info">
+            <div class="item-name">Chilli Oil</div>
+            <div class="item-detail">Homemade spicy oil. 🌶️ For heat lovers.</div>
+            <div class="item-meta"><span class="stock-badge stock-ok">✅ Available</span></div>
+          </div>
+        </div>
+        <!-- Weekend toppings -->
+        <div class="item-card weekend-only" data-type="topping" data-name="Nori" onclick="selectTopping(this,'Nori')">
+          <div class="item-img">🌊</div>
+          <div class="item-info">
+            <div class="item-name">Nori Seaweed</div>
+            <div class="item-detail">Crispy toasted seaweed sheets.</div>
+            <div class="item-meta">
+              <span class="weekend-badge">⭐ Weekend</span>
+              <span class="stock-badge stock-ok">✅ Available</span>
+            </div>
+          </div>
+        </div>
+        <div class="item-card weekend-only" data-type="topping" data-name="Bamboo Shoots" onclick="selectTopping(this,'Bamboo Shoots')">
+          <div class="item-img">🎋</div>
+          <div class="item-info">
+            <div class="item-name">Bamboo Shoots</div>
+            <div class="item-detail">Crunchy, mild flavour. Traditional ramen topping.</div>
+            <div class="item-meta">
+              <span class="weekend-badge">⭐ Weekend</span>
+              <span class="stock-badge stock-ok">✅ Available</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SOUP STATION -->
+<div class="soup-station">
+  <div class="soup-inner">
+    <div class="section-label">Broth Station</div>
+    <div class="section-title" style="font-family:'Bebas Neue';font-size:clamp(2.2rem,5vw,3.8rem);letter-spacing:2px;margin-bottom:32px;">Choose Your <span style="color:var(--red)">Soup</span></div>
+    <div class="soup-grid">
+      <div class="soup-card" data-soup="Beef Broth" onclick="selectSoup(this,'Beef Broth')">
+        <div class="soup-emoji">🍲</div>
+        <div class="soup-name">Beef Broth</div>
+        <div class="soup-desc">Rich, slow-simmered beef bone broth. Deep umami flavour, warming and hearty.</div>
+        <div class="soup-tags">
+          <span class="soup-tag">Rich</span>
+          <span class="soup-tag">Savoury</span>
+          <span class="soup-tag">~45 kcal</span>
+          <span class="soup-tag">⚠️ Beef</span>
+        </div>
+      </div>
+      <div class="soup-card" data-soup="Tom Yum" onclick="selectSoup(this,'Tom Yum')">
+        <div class="soup-emoji">🌶️</div>
+        <div class="soup-name">Tom Yum</div>
+        <div class="soup-desc">Thai hot and sour broth with lemongrass and kaffir lime. Punchy and aromatic.</div>
+        <div class="soup-tags">
+          <span class="soup-tag spicy">🌶️ Spicy</span>
+          <span class="soup-tag">Sour</span>
+          <span class="soup-tag">~35 kcal</span>
+        </div>
+      </div>
+      <!-- Weekend only soup -->
+      <div class="soup-card weekend-only" data-soup="Miso Broth" onclick="selectSoup(this,'Miso Broth')">
+        <div class="soup-emoji">🫙</div>
+        <div class="soup-name">Miso Broth</div>
+        <div class="soup-desc">Classic Japanese white miso soup base. Mild, umami-rich and smooth.</div>
+        <div class="soup-tags">
+          <span class="soup-tag weekend">⭐ Weekend Only</span>
+          <span class="soup-tag">Mild</span>
+          <span class="soup-tag">~40 kcal</span>
+          <span class="soup-tag">⚠️ Soy</span>
+        </div>
+      </div>
+      <div class="soup-card weekend-only" data-soup="Coconut Curry" onclick="selectSoup(this,'Coconut Curry')">
+        <div class="soup-emoji">🥥</div>
+        <div class="soup-name">Coconut Curry</div>
+        <div class="soup-desc">Creamy Thai coconut milk broth with red curry paste. Fragrant and rich.</div>
+        <div class="soup-tags">
+          <span class="soup-tag weekend">⭐ Weekend Only</span>
+          <span class="soup-tag spicy">🌶️ Mild Spice</span>
+          <span class="soup-tag">~80 kcal</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ONLINE ORDER FORM -->
+<div class="order-section" id="order">
+  <div class="order-inner">
+    <div class="section-label">Skip the Queue</div>
+    <div class="section-title">Order <span>Online</span></div>
+    <div class="student-notice">
+      <strong>🎓 Students Only</strong> — NoodleBar@LAB is exclusively for LAB University students. Please enter your student ID to place an order. One bowl per order is <strong>€3.10</strong>, charged at the payment kiosk on pickup.
+    </div>
+
+    <!-- Bowl summary -->
+    <div class="bowl-preview">
+      <div class="bowl-display">🍜</div>
+      <div class="bowl-name" id="bowl-name">Build your bowl above</div>
+      <div class="bowl-items" id="bowl-chips">
+        <span class="bowl-chip none">Select noodles, protein, toppings and soup from the shelves above</span>
+      </div>
+      <div class="price-notice">Fixed price: <strong>€3.10</strong> per bowl · Paid at kiosk on pickup</div>
+    </div>
+
+    <!-- Order form -->
+    <div class="form-group">
+      <label class="form-label">Your Full Name</label>
+      <input class="form-input" type="text" id="student-name" placeholder="e.g. Aino Mäkinen"/>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Student ID Number</label>
+        <input class="form-input" type="text" id="student-id" placeholder="e.g. 2401234"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Pickup Time</label>
+        <select class="form-input" id="pickup-time">
+          <option value="">Select a time...</option>
+          <option>15:00</option><option>15:15</option><option>15:30</option><option>15:45</option>
+          <option>16:00</option><option>16:15</option><option>16:30</option><option>16:45</option>
+          <option>17:00</option><option>17:15</option><option>17:30</option><option>17:45</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Special Notes (optional)</label>
+      <input class="form-input" type="text" id="special-notes" placeholder="e.g. extra spicy, no egg, allergy info..."/>
+    </div>
+    <button class="place-order-btn" onclick="placeOrder()">🍜 Place My Order — Skip the Queue</button>
+  </div>
+</div>
+
+<!-- PAYMENT -->
+<div style="background:#111;" id="payment">
+  <div class="payment-section">
+    <div class="section-label">Automatic Payment</div>
+    <div class="section-title" style="font-family:'Bebas Neue';font-size:clamp(2.2rem,5vw,3.8rem);letter-spacing:2px;margin-bottom:16px;">Pay Your <span style="color:var(--red)">Way</span></div>
+    <p style="color:var(--muted); margin-bottom:36px; line-height:1.7; font-size:0.9rem;">No cashier. Tap, scan or insert at the self-checkout kiosk when you pick up your bowl.</p>
+    <div class="payment-grid">
+      <div class="pay-card"><div class="pay-icon">📱</div><div class="pay-name">MobilePay</div><div class="pay-sub">Scan QR at kiosk</div></div>
+      <div class="pay-card"><div class="pay-icon">⚡</div><div class="pay-name">Siirto</div><div class="pay-sub">Instant bank transfer</div></div>
+      <div class="pay-card"><div class="pay-icon">📶</div><div class="pay-name">Lähimaksu</div><div class="pay-sub">NFC contactless tap</div></div>
+      <div class="pay-card"><div class="pay-icon">💳</div><div class="pay-name">Debit / Credit</div><div class="pay-sub">Visa, Mastercard</div></div>
+      <div class="pay-card"><div class="pay-icon">🎓</div><div class="pay-name">Student ID</div><div class="pay-sub">LAB card</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- LOYALTY -->
+<div class="loyalty-section" id="loyalty">
+  <div class="loyalty-inner">
+    <div class="section-label">Loyalty Programme</div>
+    <div class="section-title" style="font-family:'Bebas Neue';font-size:clamp(2.2rem,5vw,3.8rem);letter-spacing:2px;margin-bottom:20px;">Eat 10, Get <span style="color:var(--gold)">1 Free</span></div>
+    <p class="loyalty-msg">Every bowl earns you a stamp. After <strong>10 visits</strong>, your next bowl is completely <strong>free</strong>. Simple as that.</p>
+    <div class="stamp-grid" id="stamp-grid"></div>
+    <p style="color:var(--muted); font-size:0.82rem; margin-bottom:48px;">🍜 = visited · Demo showing 6 out of 10 stamps collected</p>
+    <div class="qr-box">
+      <div class="qr-code" id="qr-display"></div>
+      <div class="qr-label">
+        <strong>Scan to Enrol with your Student ID</strong>
+        Scan this QR at the kiosk after each meal to register your visit and track your stamps automatically
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <strong>NoodleBar@LAB</strong> · LAB University of Applied Sciences · Lahti Campus, Finland<br/>
+  <span style="margin-top:8px;display:block;">
+    Weekdays 15:00–18:00 · Weekends 11:00–18:00 · Self-service · For LAB Students Only · €3.10 per bowl
+  </span>
+</footer>
+
+<!-- SUCCESS MODAL -->
+<div class="success-modal" id="success-modal">
+  <div class="success-box">
+    <div class="success-icon">✅</div>
+    <div class="success-title">Order Placed!</div>
+    <div class="success-sub" id="success-msg">Your bowl is being prepared. Head to NoodleBar@LAB at your pickup time and pay €3.10 at the kiosk — no waiting in line!</div>
+    <button class="close-btn" onclick="closeModal()">Done</button>
+  </div>
+</div>
+
+<script>
+  const bowl = { noodle: null, meat: null, toppings: [], soup: null };
+
+  function selectItem(el, type, name) {
+    document.querySelectorAll(`.item-card[data-type="${type}"]`).forEach(c => c.classList.remove('selected'));
+    if(bowl[type] === name) { bowl[type] = null; }
+    else { el.classList.add('selected'); bowl[type] = name; }
+    updateBowl();
+  }
+
+  function selectTopping(el, name) {
+    if(el.classList.contains('selected')) {
+      el.classList.remove('selected');
+      bowl.toppings = bowl.toppings.filter(t => t !== name);
+    } else {
+      if(bowl.toppings.length >= 3) { alert('Maximum 3 toppings!'); return; }
+      el.classList.add('selected');
+      bowl.toppings.push(name);
+    }
+    updateBowl();
+  }
+
+  function selectSoup(el, name) {
+    document.querySelectorAll('.soup-card').forEach(c => c.classList.remove('selected'));
+    if(bowl.soup === name) { bowl.soup = null; }
+    else { el.classList.add('selected'); bowl.soup = name; }
+    updateBowl();
+  }
+
+  function updateBowl() {
+    const chips = document.getElementById('bowl-chips');
+    const items = [bowl.noodle, bowl.meat, ...bowl.toppings, bowl.soup].filter(Boolean);
+    if(items.length === 0) {
+      chips.innerHTML = '<span class="bowl-chip none">Select noodles, protein, toppings and soup from the shelves above</span>';
+      document.getElementById('bowl-name').textContent = 'Build your bowl above';
+    } else {
+      chips.innerHTML = items.map(i => `<span class="bowl-chip">${i}</span>`).join('');
+      document.getElementById('bowl-name').textContent = 'Your Custom Bowl';
+    }
+    // sync to order section
+    document.getElementById('bowl-name').textContent = items.length ? 'Your Custom Bowl' : 'Build your bowl above';
+  }
+
+  function switchMenu(mode) {
+    const weekendItems = document.querySelectorAll('.weekend-only');
+    const wBtn = document.getElementById('weekday-btn');
+    const eBtn = document.getElementById('weekend-btn');
+    const note = document.getElementById('menu-note');
+    if(mode === 'weekend') {
+      weekendItems.forEach(i => i.style.display = 'block');
+      wBtn.classList.remove('active'); eBtn.classList.add('active');
+      note.textContent = 'Sat – Sun · 11:00–18:00 · Extended menu';
+    } else {
+      weekendItems.forEach(i => { i.style.display = 'none'; i.classList.remove('selected'); });
+      // deselect if weekend item was selected
+      if(bowl.noodle && !document.querySelector(`.item-card[data-name="${bowl.noodle}"]:not(.weekend-only)`)) { bowl.noodle = null; }
+      if(bowl.meat && !document.querySelector(`.item-card[data-name="${bowl.meat}"]:not(.weekend-only)`)) { bowl.meat = null; }
+      bowl.toppings = bowl.toppings.filter(t => document.querySelector(`.item-card[data-name="${t}"]:not(.weekend-only)`));
+      document.querySelectorAll('.soup-card.weekend-only').forEach(s => { s.style.display='none'; s.classList.remove('selected'); });
+      if(bowl.soup && document.querySelector(`.soup-card[data-soup="${bowl.soup}"].weekend-only`)) { bowl.soup = null; }
+      wBtn.classList.add('active'); eBtn.classList.remove('active');
+      note.textContent = 'Mon – Fri · 15:00–18:00';
+      updateBowl();
+    }
+  }
+
+  function placeOrder() {
+    const name = document.getElementById('student-name').value.trim();
+    const sid = document.getElementById('student-id').value.trim();
+    const time = document.getElementById('pickup-time').value;
+    const items = [bowl.noodle, bowl.meat, ...bowl.toppings, bowl.soup].filter(Boolean);
+    if(!name) { alert('Please enter your name.'); return; }
+    if(!sid) { alert('Please enter your student ID.'); return; }
+    if(!time) { alert('Please select a pickup time.'); return; }
+    if(items.length < 2) { alert('Please select at least a noodle/protein and a soup!'); return; }
+    document.getElementById('success-msg').textContent =
+      `Hi ${name}! Your bowl (${items.join(', ')}) is confirmed for ${time}. Head to NoodleBar@LAB at Lahti Campus and pay €3.10 at the kiosk — no waiting in line!`;
+    document.getElementById('success-modal').classList.add('show');
+  }
+
+  function closeModal() {
+    document.getElementById('success-modal').classList.remove('show');
+  }
+
+  // Stamps
+  const grid = document.getElementById('stamp-grid');
+  for(let i=0; i<10; i++) {
+    const s = document.createElement('div');
+    s.className = 'stamp' + (i < 6 ? ' filled' : '') + (i === 6 ? ' active' : '');
+    s.textContent = i < 6 ? '🍜' : (i === 9 ? '🎁' : '');
+    grid.appendChild(s);
+  }
+
+  // QR Code visual
+  const qr = document.getElementById('qr-display');
+  const pattern = [1,1,1,1,1,1,1,0,1,1,1,0,0,0,0,0,1,0,0,1,1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,1,0,1,1,1,0,1,0,1,1,1,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,0,1,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,0,1,1,0,0,1,1,1,0,1,1,0,1,1,1,1];
+  pattern.forEach(p => {
+    const px = document.createElement('div');
+    px.className = 'qr-pixel';
+    px.style.background = p ? '#000' : '#fff';
+    qr.appendChild(px);
+  });
+</script>
+</body>
+</html>
